@@ -103,6 +103,11 @@ class Calcula_modelo
 		return r_pro
 	end
 	
+	def calcula_novo
+		puts teste
+	end
+	
+	
 	def calcula_tal_anterior
 		capacidade = calcula_cap_termica_no(@ferro['calor_especifico'],@ferro['densidade'])		
 		puts "capacidade:  " + capacidade.to_s
