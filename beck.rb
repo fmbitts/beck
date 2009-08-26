@@ -11,7 +11,7 @@ class Calcula_modelo
 	def initialize
 			@ferro = {'modulo_criterio_estabilidade' => 4, 'difusividade_termica' => 5.87e-6, 'condutividade_termica' => 30, 'calor_especifico' => 700, 'densidade' => 7300}			
 #			puts "tempo de simulação em segundos"
-			@t_simulacao = 1500 #gets.to_i
+			@t_simulacao = 2#gets.to_i
 #			puts "Insira a temperatura ambiente"
 			t_ambiente =  30 #gets.to_i
 #			puts "Insira a temperatura do molde"
@@ -21,7 +21,7 @@ class Calcula_modelo
  #			puts "insira a largura do molde"
 			@l_molde = 0.01 #gets.to_f
 	#		puts "insira a largura do metal"
-			@l_metal = 0.01 #gets.to_f
+			@l_metal = 0.1 #gets.to_f
 	#		puts "inisira o numero de nós"
 			@n_nos = 100 #gets.to_f
 	# dividir nos por metal e molde(metade)
@@ -67,12 +67,7 @@ class Calcula_modelo
 		@vet_temp[0].each {|i| puts i}
 	end
  
-	def calcula_cap_termica_no(c_e,de)
-		calcula_area(@delta_z,@delta_y)
-		cap = c_e * de * @delta_x * @area
-		puts " Capacidade Termica" + cap.to_s	
-		return cap
-	end
+
 	
 	def calcula_area(d_z,d_y)
 		@area = d_z * d_y
@@ -80,40 +75,52 @@ class Calcula_modelo
 		
 	def calcula_delta_tempo
 		calcula_delta_x(@l_molde,@l_metal,@n_nos)		
-		@delta_tempo = @delta_x /(@ferro['modulo_criterio_estabilidade'] * @ferro['difusividade_termica'])
+		delta_x_quadrado = @delta_x * @delta_x
+		@delta_tempo = delta_x_quadrado /(@ferro['modulo_criterio_estabilidade'] * @ferro['difusividade_termica'])
+		puts "delta tempo:  " + @delta_tempo.to_s
 
 	end
 	
 	def calcula_delta_x(l_molde,l_metal,n_nos)
 		@delta_x = (l_metal + l_molde) / (n_nos)
+		puts "Delta x: " + @delta_x.to_s
+	end
+
+	def calcula_cap_termica_no(c_e,de)
+		calcula_area(@delta_z,@delta_y)
+		cap = c_e * de * @delta_x * @area
+		return cap
 	end
 
 	def calcula_R_anterior
-		r_ant = @delta_x / 2 * @ferro['condutividade_termica'] * @area
+		r_ant = @delta_x / (2 * @ferro['condutividade_termica'] * @area)
+#		puts "R anterior:  "  + r_ant.to_s
 		return r_ant
 	end
 	
 	def calcula_R_atual
-		r_atual = @delta_x / 2 * @ferro['condutividade_termica'] * @area		
+		r_atual = @delta_x / (2 * @ferro['condutividade_termica'] * @area)		
+#		puts "R atual:  "  + r_atual.to_s
 		return r_atual
 	end
 	
 	def calcula_R_proximo
-		r_pro = @delta_x / 2 * @ferro['condutividade_termica'] * @area
+		r_pro = @delta_x / (2 * @ferro['condutividade_termica'] * @area)
+#		puts "R proximo:  "  + r_pro.to_s
 		return r_pro
 	end
 	
-	def calcula_novo
-		puts teste
-	end
-	
+
 	
 	def calcula_tal_anterior
 		capacidade = calcula_cap_termica_no(@ferro['calor_especifico'],@ferro['densidade'])		
-		puts "capacidade:  " + capacidade.to_s
 		r_ant = calcula_R_anterior
 		r_atual = calcula_R_atual
 		tal_ant = capacidade * r_ant * r_atual
+#		puts capacidade.to_s + ":    Capacidade"
+#		puts @area.to_s + ":   Area"
+#		puts r_ant.to_s + ":   R ant" 
+#		puts tal_ant.to_s  + ":   Tal alnt"
 		return tal_ant
 	end
 
@@ -135,8 +142,26 @@ class Calcula_modelo
 			
 	
 	
-	
 	def calc_temp
+		i = 0
+		n = 0
+		t = @t_simulacao
+		@vet_temp[n+1][i]=@vet_temp[n][i]
+		for n in 0..(t - 1)
+			puts n
+			for i in 1..(@n_nos)
+				if i< @n_nos
+					@vet_temp[n+1][i] = (@vet_temp[n][i-1] * @delta_tempo*0.75/calcula_tal_anterior) + (@vet_temp[n][i]*(1 - @delta_tempo/calcula_tal_atual)) + (@vet_temp[n][i+1]*@delta_tempo/calcula_tal_proximo)
+					puts i.to_s + "   " 	+ @vet_temp[n+1][i].to_s 
+				elsif i == @n_nos
+					@vet_temp[n+1][i] = (@vet_temp[n][i-1] * @delta_tempo*0.75/calcula_tal_anterior) + 2*(@vet_temp[n][i]*(1 - @delta_tempo/calcula_tal_atual)) 
+					puts i.to_s + "   " 	+ @vet_temp[n+1][i].to_s
+				end
+			end
+		end
+	end
+	
+	def calc_temp_old
 		# vet_temp[vetor][no]
 
 		# mostra
@@ -160,7 +185,6 @@ class Calcula_modelo
 				end
 			end
 		end
-		calcula_cap_termica_no(@delta_x,@delta_y,@delta_z,@ferro['calor_especifico'],@ferro['densidade'])
 	end		
  
  
@@ -170,5 +194,5 @@ end
  
  
 modelo = Calcula_modelo.new
-modelo.calcula_tal_proximo
+modelo.calc_temp
 
