@@ -11,22 +11,22 @@ class Calcula_modelo
 	def initialize
 			@ferro = {'modulo_criterio_estabilidade' => 4, 'difusividade_termica' => 5.87e-6, 'condutividade_termica' => 30, 'calor_especifico' => 700, 'densidade' => 7300}			
 #			puts "tempo de simulação em segundos"
-			@t_simulacao = 2#gets.to_i
+			@t_simulacao = 2 #gets.to_i
 #			puts "Insira a temperatura ambiente"
 			t_ambiente =  30 #gets.to_i
 #			puts "Insira a temperatura do molde"
 			t_molde =   30 #gets.to_i
 #			puts "insira a temperatura do metal"
-			t_metal = 1700 #gets.to_i
+			t_metal = 1600 #gets.to_i
  #			puts "insira a largura do molde"
-			@l_molde = 0.01 #gets.to_f
+			@l_molde = 0.05 #gets.to_f
 	#		puts "insira a largura do metal"
-			@l_metal = 0.1 #gets.to_f
+			@l_metal = 0.05 #gets.to_f
 	#		puts "inisira o numero de nós"
 			@n_nos = 100 #gets.to_f
 	# dividir nos por metal e molde(metade)
-			@delta_z = 0.01
-			@delta_y = 0.01
+			@delta_z = 0.001
+			@delta_y = 0.001
 			inicia_vetor(t_ambiente,t_molde,t_metal)
 			calcula_delta_tempo
 			
@@ -93,51 +93,50 @@ class Calcula_modelo
 	end
 
 	def calcula_R_anterior
-		r_ant = @delta_x / (2 * @ferro['condutividade_termica'] * @area)
+		r_ant = (@delta_x) / (2 * @ferro['condutividade_termica'] * @area)
 #		puts "R anterior:  "  + r_ant.to_s
 		return r_ant
 	end
 	
 	def calcula_R_atual
-		r_atual = @delta_x / (2 * @ferro['condutividade_termica'] * @area)		
+		r_atual = (@delta_x) / (2 * @ferro['condutividade_termica'] * @area)		
 #		puts "R atual:  "  + r_atual.to_s
 		return r_atual
 	end
 	
 	def calcula_R_proximo
-		r_pro = @delta_x / (2 * @ferro['condutividade_termica'] * @area)
+		r_pro = (@delta_x) / (2 * @ferro['condutividade_termica'] * @area)
 #		puts "R proximo:  "  + r_pro.to_s
 		return r_pro
 	end
 	
 
 	
-	def calcula_tal_anterior
+	def calcula_tal_carga
 		capacidade = calcula_cap_termica_no(@ferro['calor_especifico'],@ferro['densidade'])		
+#puts "Capacidade:  " + capacidade.to_s
 		r_ant = calcula_R_anterior
 		r_atual = calcula_R_atual
-		tal_ant = capacidade * r_ant * r_atual
-#		puts capacidade.to_s + ":    Capacidade"
-#		puts @area.to_s + ":   Area"
-#		puts r_ant.to_s + ":   R ant" 
-#		puts tal_ant.to_s  + ":   Tal alnt"
-		return tal_ant
+		tal_carga = capacidade * (r_ant + r_atual)
+		return tal_carga
 	end
 
-		def calcula_tal_atual
+		def calcula_tal_descarga
 			capacidade = calcula_cap_termica_no(@ferro['calor_especifico'],@ferro['densidade'])
 			r_atual = calcula_R_atual
 			r_proximo = calcula_R_proximo
-			tal_atual = capacidade * r_atual * r_proximo
-			return tal_atual
+			tal_descarga = capacidade * (r_atual + r_proximo)
+#			puts tal_proximo.to_s  + ":   Tal atual"
+			return tal_descarga
 		end
 		
 			
-		def calcula_tal_proximo
-			t_ant = calcula_tal_atual
-			t_atual  = calcula_tal_atual
-			tal_pro = (t_ant + t_atual) / t_ant * t_atual
-			return tal_pro
+		def calcula_tal_resultante
+			t_carga = calcula_tal_carga
+			t_descarga  = calcula_tal_descarga
+			tal_resul = (t_carga + t_descarga) / (t_carga * t_descarga)
+	#		puts tal_atual.to_s  + ":   Tal proximo"			
+			return tal_resul
 		end
 			
 	
@@ -148,13 +147,13 @@ class Calcula_modelo
 		t = @t_simulacao
 		@vet_temp[n+1][i]=@vet_temp[n][i]
 		for n in 0..(t - 1)
-			puts n
+			#puts n
 			for i in 1..(@n_nos)
 				if i< @n_nos
-					@vet_temp[n+1][i] = (@vet_temp[n][i-1] * @delta_tempo*0.75/calcula_tal_anterior) + (@vet_temp[n][i]*(1 - @delta_tempo/calcula_tal_atual)) + (@vet_temp[n][i+1]*@delta_tempo/calcula_tal_proximo)
+					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] * @delta_tempo*0.75) / (calcula_tal_descarga)) + ((@vet_temp[n][i] * (1 - @delta_tempo*0.75)) / calcula_tal_resultante) + ((@vet_temp[n][i+1] * (@delta_tempo*0.75)) / calcula_tal_carga)
 					puts i.to_s + "   " 	+ @vet_temp[n+1][i].to_s 
 				elsif i == @n_nos
-					@vet_temp[n+1][i] = (@vet_temp[n][i-1] * @delta_tempo*0.75/calcula_tal_anterior) + 2*(@vet_temp[n][i]*(1 - @delta_tempo/calcula_tal_atual)) 
+					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] * @delta_tempo*0.75) / calcula_tal_descarga) + 2*(@vet_temp[n][i] * ((1 - @delta_tempo*0.75) / calcula_tal_resultante)) 
 					puts i.to_s + "   " 	+ @vet_temp[n+1][i].to_s
 				end
 			end
