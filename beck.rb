@@ -9,15 +9,16 @@ require 'narray'
 class Calcula_modelo 
  
 	def initialize
-			@ferro = {'modulo_criterio_estabilidade' => 4, 'difusividade_termica' => 5.87e-6, 'condutividade_termica' => 30, 'calor_especifico' => 700, 'densidade' => 7300}			
+#			@ferro = {'modulo_criterio_estabilidade' => 4, 'difusividade_termica' => 5.87e-6, 'condutividade_termica' => 30, 'calor_especifico' => 700, 'densidade' => 7300}			
+			@aluminio = {'condutividade_termica_solido' => 213.0,'condutividade_termica_liquido' => 91.0, 'calor_especifico_solido' => 1181.0,'calor_especifico_liquido' => 1086.0, 'densidade_solido' => 2550.0,'densidade_liquida' => 2368.0}
 #			puts "tempo de simulação em segundos"
-			@t_simulacao = 2 #gets.to_i
+			@t_simulacao = 3 #gets.to_i
 #			puts "Insira a temperatura ambiente"
 			t_ambiente =  30 #gets.to_i
 #			puts "Insira a temperatura do molde"
 			t_molde =   30 #gets.to_i
 #			puts "insira a temperatura do metal"
-			t_metal = 1600 #gets.to_i
+			t_metal = 700 #gets.to_i
  #			puts "insira a largura do molde"
 			@l_molde = 0.05 #gets.to_f
 	#		puts "insira a largura do metal"
@@ -67,17 +68,24 @@ class Calcula_modelo
 		@vet_temp[0].each {|i| puts i}
 	end
  
-
+	def calcula_difusividade_solido_metal
+		difusividade = @aluminio['condutividade_termica_solido'] / (@aluminio['calor_especifico_solido'] * @aluminio['densidade_solido'])
+		puts "teste:   "  + difusividade.to_s
+		return difusividade
+	end
 	
 	def calcula_area(d_z,d_y)
 		@area = d_z * d_y
 	end
 		
 	def calcula_delta_tempo
-		calcula_delta_x(@l_molde,@l_metal,@n_nos)		
-		delta_x_quadrado = @delta_x * @delta_x
-		@delta_tempo = delta_x_quadrado /(@ferro['modulo_criterio_estabilidade'] * @ferro['difusividade_termica'])
-		puts "delta tempo:  " + @delta_tempo.to_s
+		calcula_delta_x(@l_molde,@l_metal,@n_nos)
+		alfa = calcula_difusividade_solido_metal
+		delta_tempo = (@delta_x * @delta_x) / (2 * calcula_difusividade_solido_metal)
+		@delta_tempo = delta_tempo * 0.5
+		puts "delta tempo:  " +  @delta_tempo.to_s
+		
+	return 	
 
 	end
 	
@@ -87,25 +95,25 @@ class Calcula_modelo
 	end
 
 	def calcula_cap_termica_no(c_e,de)
-		calcula_area(@delta_z,@delta_y)
+				calcula_area(@delta_z,@delta_y)
 		cap = c_e * de * @delta_x * @area
 		return cap
 	end
 
 	def calcula_R_anterior
-		r_ant = (@delta_x) / (2 * @ferro['condutividade_termica'] * @area)
+		r_ant = (@delta_x) / (2 * @aluminio['condutividade_termica_solido'] * @area)
 #		puts "R anterior:  "  + r_ant.to_s
 		return r_ant
 	end
 	
 	def calcula_R_atual
-		r_atual = (@delta_x) / (2 * @ferro['condutividade_termica'] * @area)		
+		r_atual = (@delta_x) / (2 * @aluminio['condutividade_termica_solido'] * @area)		
 #		puts "R atual:  "  + r_atual.to_s
 		return r_atual
 	end
 	
 	def calcula_R_proximo
-		r_pro = (@delta_x) / (2 * @ferro['condutividade_termica'] * @area)
+		r_pro = (@delta_x) / (2 * @aluminio['condutividade_termica_solido'] * @area)
 #		puts "R proximo:  "  + r_pro.to_s
 		return r_pro
 	end
@@ -113,8 +121,7 @@ class Calcula_modelo
 
 	
 	def calcula_tal_carga
-		capacidade = calcula_cap_termica_no(@ferro['calor_especifico'],@ferro['densidade'])		
-#puts "Capacidade:  " + capacidade.to_s
+		capacidade = calcula_cap_termica_no(@aluminio['calor_especifico_solido'],@aluminio['densidade_solido'])
 		r_ant = calcula_R_anterior
 		r_atual = calcula_R_atual
 		tal_carga = capacidade * (r_ant + r_atual)
@@ -122,7 +129,7 @@ class Calcula_modelo
 	end
 
 		def calcula_tal_descarga
-			capacidade = calcula_cap_termica_no(@ferro['calor_especifico'],@ferro['densidade'])
+			capacidade = calcula_cap_termica_no(@aluminio['calor_especifico_solido'],@aluminio['densidade_solido'])
 			r_atual = calcula_R_atual
 			r_proximo = calcula_R_proximo
 			tal_descarga = capacidade * (r_atual + r_proximo)
@@ -141,7 +148,7 @@ class Calcula_modelo
 			
 	
 	
-	def calc_temp
+	def calcula_temp
 		i = 0
 		n = 0
 		t = @t_simulacao
@@ -150,41 +157,41 @@ class Calcula_modelo
 			#puts n
 			for i in 1..(@n_nos)
 				if i< @n_nos
-					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] * @delta_tempo*0.75) / (calcula_tal_descarga)) + ((@vet_temp[n][i] * (1 - @delta_tempo*0.75)) / calcula_tal_resultante) + ((@vet_temp[n][i+1] * (@delta_tempo*0.75)) / calcula_tal_carga)
+					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] * @delta_tempo) / (calcula_tal_descarga)) + ((@vet_temp[n][i] * (1 - @delta_tempo)) / (calcula_tal_resultante)) + ((@vet_temp[n][i+1] * (@delta_tempo)) / (calcula_tal_carga))
 					puts i.to_s + "   " 	+ @vet_temp[n+1][i].to_s 
 				elsif i == @n_nos
-					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] * @delta_tempo*0.75) / calcula_tal_descarga) + 2*(@vet_temp[n][i] * ((1 - @delta_tempo*0.75) / calcula_tal_resultante)) 
+					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] * @delta_tempo) / calcula_tal_descarga) + 2*(@vet_temp[n][i] * ((1 - @delta_tempo) / calcula_tal_resultante)) 
 					puts i.to_s + "   " 	+ @vet_temp[n+1][i].to_s
 				end
 			end
 		end
 	end
 	
-	def calc_temp_old
-		# vet_temp[vetor][no]
-
-		# mostra
-		puts "Delta tempo: " + @delta_tempo.to_s 
-		puts "Delta x:  "  + @delta_x.to_s
-		t = @t_simulacao
-		puts "tempo simulação   :" + t.to_s
-		i = 0
-		n = 0
-		@vet_temp[n+1][i]=@vet_temp[n][i]
-		q = 	(@delta_tempo/@delta_x)
-		for n in 0..(t - 1)
-			puts n.to_s
-			for i in 1..(@n_nos)
-				if i< @n_nos
-					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] - (2 * @vet_temp[n][i]) + @vet_temp[n][i+1])*(@delta_tempo*0.75))/(@ferro['calor_especifico']*@ferro['densidade']*@delta_x)*@ferro['condutividade_termica'] + @vet_temp[n][i]
-					puts  (i).to_s + " " + @vet_temp[n+1][i].to_s
-				elsif i == @n_nos 
-					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] - (2 * @vet_temp[n][i]) + @vet_temp[n][i])*@delta_tempo*0.75)/(@ferro['calor_especifico']*@ferro['densidade']*@delta_x)*@ferro['condutividade_termica'] + @vet_temp[n][i]
-					puts  (i).to_s + " " + @vet_temp[n+1][i].to_s
-				end
-			end
-		end
-	end		
+#	def calc_temp_old
+#		# vet_temp[vetor][no]
+#
+#		# mostra
+#		puts "Delta tempo: " + @delta_tempo.to_s 
+#		puts "Delta x:  "  + @delta_x.to_s
+#		t = @t_simulacao
+#		puts "tempo simulação   :" + t.to_s
+#		i = 0
+#		n = 0
+#		@vet_temp[n+1][i]=@vet_temp[n][i]
+#		q = 	(@delta_tempo/@delta_x)
+#		for n in 0..(t - 1)
+#			puts n.to_s
+#			for i in 1..(@n_nos)
+#				if i< @n_nos
+#					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] - (2 * @vet_temp[n][i]) + @vet_temp[n][i+1])*(@delta_tempo*0.75))/(@ferro['calor_especifico']*@ferro['densidade']*@delta_x)*@ferro['condutividade_termica'] + @vet_temp[n][i]
+#					puts  (i).to_s + " " + @vet_temp[n+1][i].to_s
+#				elsif i == @n_nos 
+#					@vet_temp[n+1][i] = ((@vet_temp[n][i-1] - (2 * @vet_temp[n][i]) + @vet_temp[n][i])*@delta_tempo*0.75)/(@ferro['calor_especifico']*@ferro['densidade']*@delta_x)*@ferro['condutividade_termica'] + @vet_temp[n][i]
+#					puts  (i).to_s + " " + @vet_temp[n+1][i].to_s
+#				end
+#			end
+#		end
+#	end		
  
  
 end
@@ -193,5 +200,6 @@ end
  
  
 modelo = Calcula_modelo.new
-modelo.calc_temp
+modelo.calcula_temp
+modelo.calcula_difusividade_solido_metal
 
