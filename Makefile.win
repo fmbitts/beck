@@ -1,0 +1,33 @@
+# Project: Checker
+# Compiler: Default GCC compiler
+# Compiler Type: MingW 3
+# Makefile created by wxDev-C++ 6.10.2 on 07/09/09 20:49
+
+CPP       = g++.exe
+CC        = gcc.exe
+WINDRES   = windres.exe
+OBJ       = Objects/MingW/main.o
+LINKOBJ   = Objects/MingW/main.o
+LIBS      = -L"C:/Arquivos de programas/Dev-Cpp/Lib"  
+INCS      = -I"include"
+CXXINCS   = -I"C:/Arquivos de programas/Dev-Cpp/lib/gcc/mingw32/3.4.2/include" -I"C:/Arquivos de programas/Dev-Cpp/include/c++/3.4.2/backward" -I"C:/Arquivos de programas/Dev-Cpp/include/c++/3.4.2/mingw32" -I"C:/Arquivos de programas/Dev-Cpp/include/c++/3.4.2" -I"C:/Arquivos de programas/Dev-Cpp/include" -I"C:/Arquivos de programas/Dev-Cpp/" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/msw" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/generic" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/fl" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/gizmos" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/html" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/mmedia" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/net" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/ogl" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/plot" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/protocol" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/stc" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/svg" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/xml" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx/xrc" -I"C:/Arquivos de programas/Dev-Cpp/include/common/wx" -I"C:/Arquivos de programas/Dev-Cpp/include/common"
+RCINCS    = --include-dir "C:/ARQUIV~1/Dev-Cpp/include/common"
+BIN       = Output/MingW/Checker.exe
+DEFINES   = 
+CXXFLAGS  = $(CXXINCS) $(DEFINES)  
+CFLAGS    = $(INCS) $(DEFINES)  
+GPROF     = gprof.exe
+RM        = rm -f
+LINK      = g++.exe
+
+.PHONY: all all-before all-after clean clean-custom
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	$(RM) $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(LINK) $(LINKOBJ) -o "Output\MingW\Checker.exe" $(LIBS)
+
+Objects/MingW/main.o: $(GLOBALDEPS) main.c
+	$(CC) -c main.c -o Objects/MingW/main.o $(CFLAGS)
