@@ -26,7 +26,7 @@ class Calcula_modelo
 			t_metal = 700 #gets.to_i
  #			puts "insira a largura do molde"
 			@l_molde = 0.05 #gets.to_f
-	#		puts "insira a largura do metal"
+	#		puts "insira a largura do metal"z
 			@l_metal = 0.05 #gets.to_f
 	#		puts "inisira o numero de nós"
 			@n_nos_molde = 20
@@ -331,7 +331,7 @@ end
  
 modelo = Calcula_modelo.new
 modelo.mostra
-modelo.temp_final
+#modelo.temp_final
 modelo.calcula_frac_solido(641.444444)
 
 
