@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
 #define CHECKER_VERSION "$Id: beck.c,v 1.12 2009/09/09 21:31:42 filipi Exp $"
 #define	EXIT_FAILURE  1
 #define	EXIT_SUCCESS  0
@@ -27,6 +28,8 @@ unsigned char locateVal(int value, int count, int *col, int *line, int *index,\
 unsigned char locateXY(int col, int line, int count, int *val, int *index, \
                        struct tmap *map);
 int maxDepth(struct tmap *map, int count);
+
+int quiet;
 //
 
 void usage(void);
@@ -41,7 +44,7 @@ void properties(float temp);
 int main(int argc, char *argv[]){
   int col = 0, line = 0;
   int lastLine = 0, lastColumn = 0, *index;
-  char *arg, quiet = 0, disableEqualTest = 0;
+  char *arg, disableEqualTest = 0;
 
   int count, i,left, right, *vecleft, *vecright, val;
   int j, k;
@@ -125,12 +128,13 @@ int main(int argc, char *argv[]){
 
   i = 0; 
   for (i=0;i<nodes;i++){
-
-    printf("Temperature on node %d: %1.2f\n", i, vecTemp[i]);
+    if (!quiet) printf("Temperature on node %d: %1.2f\n", i, vecTemp[i]);
   }
-	printf("Tf:  %f \n",TF);	
-	printf("Tl:  %f \n",Tl);
-	properties(600);
+  if (!quiet){
+    printf("Tf:  %f \n",TF);	
+    printf("Tl:  %f \n",Tl);
+  }
+  properties(600);
   free(vecTemp);
 
   if (!quiet) printf("\nBeck finished successfully!!\n");
@@ -235,28 +239,27 @@ void *reallocX (void *ptr, unsigned int nbytes){
   return ptr;
 }
 
-
 void frac_part(float *fs, float *dfs,float temp){	
-	float a, b, c;
-	a = ((TF - temp) / (TF -Tl));
-	printf("a:  %f \n",a);	
-	b = 1 / (Cp -1);
-	printf("b: %f \n",b);
-	c = 1 /(TF - Tl);
-	printf("c: %f \n",c);
-	*fs = 1 - (powf(a,b));
-	*dfs = powf(a,b);
+  float a, b, c;
+  a = ((TF - temp) / (TF -Tl));
+  if (!quiet) printf("a:  %f \n", a);	
+  b = 1 / (Cp -1);
+  if (!quiet) printf("b: %f \n", b);
+  c = 1 /(TF - Tl);
+  if (!quiet) printf("c: %f \n", c);
+  *fs = 1 - (powf(a,b));
+  *dfs = powf(a,b);
 }
-
 
 void properties(float temp){
-	float fs=0;
-	float dfs=0;
-	frac_part(&fs,&dfs,temp);
-	printf("temp: %f \n",temp);	
-	printf("fs:  %f \n",fs);
-	printf("dfs: %f  \n",dfs);
+  float fs = 0;
+  float dfs = 0;
+  frac_part(&fs, &dfs, temp);
+  if (!quiet){
+    printf("temp: %f \n",temp);	
+    printf("fs:  %f \n",fs);
+    printf("dfs: %f  \n",dfs);
+  }
 }
-
 
 	
