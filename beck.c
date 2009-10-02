@@ -6,16 +6,16 @@
 #define	EXIT_FAILURE  1
 #define	EXIT_SUCCESS  0
 //Metal properties
-float Ks=213; // condutividade termica do solido
-float Kl=91;  // condutividade termica do liquido
-float Cs=1181; // calor especifico solido
-float Cl=1086; //calor especifico liquido
-float Ds=2550; // densidade solido
-float Dl=2368; //densidade loquido
-float Ts=548; //temperatura solidus
-float Tl=645; //temperatura liquidus
-float Cp=0.17; //coeficiente de particao
-float TF=660; //temperatura fusao
+static float Ks=213;  // condutividade termica do solido
+static float Kl=91;   // condutividade termica do liquido
+static float Cs=1181; // calor especifico solido
+static float Cl=1086; //calor especifico liquido
+static float Ds=2550; // densidade solido
+static float Dl=2368; //densidade loquido
+static float Ts=548;  //temperatura solidus
+static float Tl=645;  //temperatura liquidus
+static float Cp=0.17; //coeficiente de particao
+static float TF=660;  //temperatura fusao
 
 //
 struct tmap {
@@ -131,8 +131,8 @@ int main(int argc, char *argv[]){
     if (!quiet) printf("Temperature on node %d: %1.2f\n", i, vecTemp[i]);
   }
   if (!quiet){
-    printf("Tf:  %f \n",TF);	
-    printf("Tl:  %f \n",Tl);
+    printf("Tf:  %1.4f \n",TF);	
+    printf("Tl:  %1.4f \n",Tl);
   }
   properties(600);
   free(vecTemp);
@@ -242,11 +242,11 @@ void *reallocX (void *ptr, unsigned int nbytes){
 void frac_part(float *fs, float *dfs,float temp){	
   float a, b, c;
   a = ((TF - temp) / (TF -Tl));
-  if (!quiet) printf("a:  %f \n", a);	
+  if (!quiet) printf("a:  %1.4f \n", a);	
   b = 1 / (Cp -1);
-  if (!quiet) printf("b: %f \n", b);
+  if (!quiet) printf("b: %1.4f \n", b);
   c = 1 /(TF - Tl);
-  if (!quiet) printf("c: %f \n", c);
+  if (!quiet) printf("c: %1.4f \n", c);
   *fs = 1 - (powf(a,b));
   *dfs = powf(a,b);
 }
@@ -256,9 +256,9 @@ void properties(float temp){
   float dfs = 0;
   frac_part(&fs, &dfs, temp);
   if (!quiet){
-    printf("temp: %f \n",temp);	
-    printf("fs:  %f \n",fs);
-    printf("dfs: %f  \n",dfs);
+    printf("temp: %1.4f \n",temp);	
+    printf("fs:  %1.4f \n",fs);
+    printf("dfs: %1.4f  \n",dfs);
   }
 }
 

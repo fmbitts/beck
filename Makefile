@@ -1,10 +1,11 @@
-CC=gcc -O3 -g
+CC=gcc
+FLAGS=-O4
 LIBS=-lm
 
 all:	beck
 
 beck:	Makefile beck.c
-	$(CC) beck.c $(LIBS) -o beck
+	$(CC) $(FLAGS) beck.c $(LIBS) -o beck
 
 clean:
 	rm -rfv \#*\# *~ *.aux *.log *.blg *.bbl *.log *.out *.toc
