@@ -1,8 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #define CHECKER_VERSION "$Id: beck.c,v 1.12 2009/09/09 21:31:42 filipi Exp $"
 #define	EXIT_FAILURE  1
 #define	EXIT_SUCCESS  0
+//Metal properties
+float Ks=213; // condutividade termica do solido
+float Kl=91;  // condutividade termica do liquido
+float Cs=1181; // calor especifico solido
+float Cl=1086; //calor especifico liquido
+float Ds=2550; // densidade solido
+float Dl=2368; //densidade loquido
+float Ts=548; //temperatura solidus
+float Tl=645; //temperatura liquidus
+float Cp=0.17; //coeficiente de particao
+float TF=660; //temperatura fusao
 
 //
 struct tmap {
@@ -22,6 +34,9 @@ void printversion(void);
 void flush_in();
 void *mallocX (unsigned int nbytes);
 void *reallocX (void *ptr, unsigned int nbytes);
+void frac_part(float *fs, float *dfs,float temp);
+void properties(float temp);
+
 
 int main(int argc, char *argv[]){
   int col = 0, line = 0;
@@ -113,7 +128,9 @@ int main(int argc, char *argv[]){
 
     printf("Temperature on node %d: %1.2f\n", i, vecTemp[i]);
   }
-
+	printf("Tf:  %f \n",TF);	
+	printf("Tl:  %f \n",Tl);
+	properties(600);
   free(vecTemp);
 
   if (!quiet) printf("\nBeck finished successfully!!\n");
@@ -217,3 +234,29 @@ void *reallocX (void *ptr, unsigned int nbytes){
   }
   return ptr;
 }
+
+
+void frac_part(float *fs, float *dfs,float temp){	
+	float a, b, c;
+	a = ((TF - temp) / (TF -Tl));
+	printf("a:  %f \n",a);	
+	b = 1 / (Cp -1);
+	printf("b: %f \n",b);
+	c = 1 /(TF - Tl);
+	printf("c: %f \n",c);
+	*fs = 1 - (powf(a,b));
+	*dfs = powf(a,b);
+}
+
+
+void properties(float temp){
+	float fs=0;
+	float dfs=0;
+	frac_part(&fs,&dfs,temp);
+	printf("temp: %f \n",temp);	
+	printf("fs:  %f \n",fs);
+	printf("dfs: %f  \n",dfs);
+}
+
+
+	
