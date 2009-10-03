@@ -6,7 +6,7 @@
 #define	EXIT_FAILURE  1
 #define	EXIT_SUCCESS  0
 
-struct sproperties {
+struct metalProperties {
   float Ks,  // Solid thermal conductivity
         Kl,  // Liquid thermal conductivity
         Cs,  // Solid specific heat capacity
@@ -18,6 +18,31 @@ struct sproperties {
         Tl,  // Liquid temperature
         Tm;  // Melting temperature
   };
+struct moldProperties{
+  int   Smc; // Staiblity modulus criteria
+  float Td,  // Thermal diffusivity
+        Tc,  // thermal conductivity
+        Cs,  // specific heat capacity
+        D;   // Density
+  };
+
+/* Porting ruby hashes to C structs
+struct iron {'modulo_criterio_estabilidade' => 4,
+             'difusividade_termica' => 5.87e-6,
+             'condutividade_termica' => 30, 
+             'calor_especifico' => 700, 
+             'densidade' => 7300}			
+struct aluminum {'condutividade_termica_solido' => 213.0,
+                 'condutividade_termica_liquido' => 91.0, 
+                 'calor_especifico_solido' => 1181.0,\
+                 'calor_especifico_liquido' => 1086.0,
+                 'densidade_solido' => 2550.0,
+                 'densidade_liquido' => 2368.0,
+                 'temperatura_solidus' => 548.0, 
+                 'temperatura_liquidus' => 645.0, \
+                 'coeficiente_particao' => 0.17,
+                 'temperatura_fusao' => 660.0}
+*/
 
 int quiet;
 
@@ -28,15 +53,15 @@ void *mallocX (unsigned int nbytes);
 void *reallocX (void *ptr, unsigned int nbytes);
 
 void getFracPart(float *fs, float *dfs, float temp, \
-                 struct sproperties properties);
-void showProperties(float temp, struct sproperties *properties);
+                 struct metalProperties metal);
+void showProperties(float temp, struct metalProperties *metal);
 
 int main(int argc, char *argv[]){
   FILE *propsFile;
   int metalNodes = 0, moldNodes = 0, nodes = 0, i;
   float *vecTemp;
   char *filename = 0, *arg;
-  struct sproperties properties;
+  struct metalProperties metal;
 
   // Parse Command Line
   for (i=1; i<argc; i++) {
@@ -110,24 +135,25 @@ int main(int argc, char *argv[]){
 
   i = 0; 
   for (i=0;i<nodes;i++){
-    if (!quiet) printf("Temperature on node %d: %1.2f\n", i, vecTemp[i]);
+    if (!quiet)
+      printf("Temperature on node %d: %1.2f degrees\n", i, vecTemp[i]);
   }
-  properties.Ks = 213;  // Solid thermal conductivity
-  properties.Kl = 91;   // Liquid thermal conductivity
-  properties.Cs = 1181; // Solid specific heat capacity
-  properties.Cl = 1086; // Liquid specific heat capacity
-  properties.Ds = 2550; // Solid density
-  properties.Dl = 2368; // Liquid density
-  properties.Ts = 548;  // Solid temperature
-  properties.Tl = 645;  // Liquid temperature
-  properties.Pc = 0.17; // Partition coefficient
-  properties.Tm = 660;  // Melting temperature
+  metal.Ks = 213;  // Solid thermal conductivity
+  metal.Kl = 91;   // Liquid thermal conductivity
+  metal.Cs = 1181; // Solid specific heat capacity
+  metal.Cl = 1086; // Liquid specific heat capacity
+  metal.Ds = 2550; // Solid density
+  metal.Dl = 2368; // Liquid density
+  metal.Ts = 548;  // Solid temperature
+  metal.Tl = 645;  // Liquid temperature
+  metal.Pc = 0.17; // Partition coefficient
+  metal.Tm = 660;  // Melting temperature
   if (!quiet){
-    printf("Melting temperature:  %1.4f \n", properties.Tm);	
-    printf("Liquid temperature:   %1.4f \n", properties.Tl);
+    printf("Melting temperature:  %1.4f degrees\n", metal.Tm);	
+    printf("Liquid temperature:   %1.4f degrees\n", metal.Tl);
   }
 
-  showProperties(600, &properties);
+  showProperties(600, &metal);
   free(vecTemp);
 
   if (!quiet) printf("\nBeck finished successfully!!\n");
@@ -140,22 +166,22 @@ int main(int argc, char *argv[]){
 }
 
 void getFracPart(float *fs, float *dfs,float temp, \
-                 struct sproperties properties){
+                 struct metalProperties metal){
   float a, b, c;
-  a = ( (properties.Tm - temp) / (properties.Tm - properties.Tl) );
+  a = ( (metal.Tm - temp) / (metal.Tm - metal.Tl) );
   if (!quiet) printf("a:  %1.4f \n", a);
-  b = 1 / (properties.Pc -1);
+  b = 1 / (metal.Pc -1);
   if (!quiet) printf("b: %1.4f \n", b);
-  c = 1 /(properties.Tm - properties.Tl);
+  c = 1 /(metal.Tm - metal.Tl);
   if (!quiet) printf("c: %1.4f \n", c);
   *fs = 1 - ( powf(a,b) );
   *dfs = powf(a,b);
 }
 
-void showProperties(float temp, struct sproperties *properties){
+void showProperties(float temp, struct metalProperties *metal){
   float fs = 0;
   float dfs = 0;
-  getFracPart(&fs, &dfs, temp, *properties);
+  getFracPart(&fs, &dfs, temp, *metal);
   if (!quiet){
     printf("temp: %1.4f \n",temp);	
     printf("fs:  %1.4f \n",fs);
