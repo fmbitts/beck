@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="/usr/bin/fpc" Date="1535575190"/>
+  <Params Value=" -Mdelphi -Scghi -Cg -O1 -g -gl -l -vewnhibq -Fu/usr/lib/lazarus/1.8.2/components/printers/lib/x86_64-linux/gtk2 -Fu/usr/lib/lazarus/1.8.2/components/cairocanvas/lib/x86_64-linux/gtk2 -Fu/usr/lib/lazarus/1.8.2/lcl/units/x86_64-linux/gtk2 -Fu/usr/lib/lazarus/1.8.2/lcl/units/x86_64-linux -Fu/usr/lib/lazarus/1.8.2/components/lazutils/lib/x86_64-linux -Fu/usr/lib/lazarus/1.8.2/packager/units/x86_64-linux -Fu/plumes/beck/hi_beck/ -FU/plumes/beck/hi_beck/lib/x86_64-linux/ -FE/plumes/beck/hi_beck/lib/x86_64-linux/ -dLCL -dLCLgtk2 -dBorland -dVer150 -dDelphi7 -dCompiler6_Up -dPUREPASCAL beck.lpr"/>
+  <Complete Value="False"/>
+</CONFIG>
